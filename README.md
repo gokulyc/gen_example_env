@@ -1,5 +1,10 @@
 # gen_example_env
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
+![AI-assisted, human-reviewed](https://img.shields.io/badge/AI--assisted-human--reviewed-2ea44f)
+
+> Built with the help of AI coding assistants; all code is human-reviewed and tested.
+
 Generate a `.env.example` file from an existing `.env` file. Keys, comments, blank lines and
 `export` prefixes are preserved; values are replaced with `<KEY>` placeholders (or blanked) so the
 result is safe to commit.
@@ -53,3 +58,7 @@ API_KEY="abc123" # from the dashboard
 uv sync            # install runtime + dev dependencies
 uv run pytest -q   # run the test suite
 ```
+
+## License
+
+MIT. See [LICENSE.txt](LICENSE.txt).

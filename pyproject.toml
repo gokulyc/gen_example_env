@@ -3,6 +3,8 @@ name = "gen_example_env"
 version = "0.1.0"
 description = "Generate a .env.example file from an existing .env file, with secret values stripped."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.txt"]
 authors = [
     { name = "Gokul Y", email = "gokulyc@gmail.com" }
 ]

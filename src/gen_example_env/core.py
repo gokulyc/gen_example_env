@@ -103,7 +103,7 @@ def _example_value(line: Line, mode: Mode) -> str:
     raise ValueError(f"unknown mode: {mode!r}")
 
 
-def render_example(lines: list[Line], *, mode: Mode = Mode.BLANK) -> str:
+def render_example(lines: list[Line], *, mode: Mode = Mode.PLACEHOLDER) -> str:
     """Re-emit ``lines`` as .env.example text with values rewritten per ``mode``."""
     out: list[str] = []
     for line in lines:
@@ -118,6 +118,6 @@ def render_example(lines: list[Line], *, mode: Mode = Mode.BLANK) -> str:
     return "\n".join(out) + ("\n" if out else "")
 
 
-def generate_example(text: str, *, mode: Mode = Mode.BLANK) -> str:
+def generate_example(text: str, *, mode: Mode = Mode.PLACEHOLDER) -> str:
     """Convenience wrapper: parse ``text`` and render the example in one step."""
     return render_example(parse_env_lines(text), mode=mode)

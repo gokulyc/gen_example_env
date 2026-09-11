@@ -1,4 +1,12 @@
-from gen_example_env.core import Mode, generate_example, parse_env_lines, render_example
+import pytest
+
+from gen_example_env.core import (
+    Mode,
+    generate_example,
+    looks_secret,
+    parse_env_lines,
+    render_example,
+)
 
 SAMPLE = """\
 # Database
@@ -36,8 +44,25 @@ def test_parse_export_quotes_and_inline_comments():
     assert by_key["EMPTY"].value == ""
 
 
+def test_render_placeholder_mode_is_default():
+    expected = """\
+# Database
+DB_HOST=<DB_HOST>
+DB_PORT=<DB_PORT>
+
+export DEBUG=<DEBUG>
+API_KEY=<API_KEY>  # inline comment
+PASSWORD=<PASSWORD>
+URL=<URL>
+NOT AN ASSIGNMENT
+EMPTY=<EMPTY>
+"""
+    assert generate_example(SAMPLE) == expected
+    assert generate_example(SAMPLE, mode=Mode.PLACEHOLDER) == expected
+
+
 def test_render_blank_mode():
-    assert generate_example(SAMPLE) == """\
+    assert generate_example(SAMPLE, mode=Mode.BLANK) == """\
 # Database
 DB_HOST=
 DB_PORT=
@@ -51,22 +76,46 @@ EMPTY=
 """
 
 
-def test_render_placeholder_mode():
-    out = generate_example(SAMPLE, mode=Mode.PLACEHOLDER)
-    assert "DB_HOST=<DB_HOST>" in out
-    assert "export DEBUG=<DEBUG>" in out
-    assert "API_KEY=<API_KEY>  # inline comment" in out
-
-
 def test_render_keep_safe_mode():
-    out = generate_example(SAMPLE, mode=Mode.KEEP_SAFE)
-    assert "DB_HOST=localhost" in out
-    assert "DB_PORT=5432" in out
-    assert "export DEBUG=true" in out
-    assert "URL=https://example.com/path#anchor" in out
-    # secret-looking key and quoted value are both blanked
-    assert "API_KEY=  # inline comment" in out
-    assert "PASSWORD=\n" in out
+    # Secret-looking keys (API_KEY, PASSWORD) and quoted values are blanked; the rest is kept.
+    assert generate_example(SAMPLE, mode=Mode.KEEP_SAFE) == """\
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+
+export DEBUG=true
+API_KEY=  # inline comment
+PASSWORD=
+URL=https://example.com/path#anchor
+NOT AN ASSIGNMENT
+EMPTY=
+"""
+
+
+@pytest.mark.parametrize(
+    "key",
+    ["SECRET", "MY_SECRET", "TOKEN", "ACCESS_TOKEN", "PASSWORD", "DB_PASSWD", "PRIVATE_PEM",
+     "AWS_CREDENTIALS", "AUTH_URL", "API_BASE", "KEY_ID", "stripe_api_key"],
+)
+def test_looks_secret_matches_secret_like_keys(key):
+    (line,) = parse_env_lines(f"{key}=value")
+    assert looks_secret(line) is True
+
+
+@pytest.mark.parametrize("key", ["DB_HOST", "PORT", "DEBUG", "LOG_LEVEL", "REGION"])
+def test_looks_secret_ignores_plain_keys(key):
+    (line,) = parse_env_lines(f"{key}=value")
+    assert looks_secret(line) is False
+
+
+def test_looks_secret_treats_quoted_values_as_secret():
+    (line,) = parse_env_lines('DB_HOST="localhost"')
+    assert looks_secret(line) is True
+    assert generate_example('DB_HOST="localhost"', mode=Mode.KEEP_SAFE) == "DB_HOST=\n"
+
+
+def test_mode_values_match_cli_strings():
+    assert {m.value for m in Mode} == {"blank", "placeholder", "keep-safe"}
 
 
 def test_render_empty_input():

@@ -45,12 +45,12 @@ def main(
             "--mode",
             "-m",
             help=(
-                "blank: KEY=  |  placeholder: KEY=<KEY>  |  "
+                "placeholder: KEY=<KEY>  |  blank: KEY=  |  "
                 "keep-safe: keep values whose key does not look secret."
             ),
             case_sensitive=False,
         ),
-    ] = Mode.BLANK,
+    ] = Mode.PLACEHOLDER,
     force: Annotated[
         bool,
         typer.Option("--force", "-f", help="Overwrite the output file if it exists."),

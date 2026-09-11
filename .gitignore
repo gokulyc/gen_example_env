@@ -12,4 +12,5 @@ wheels/
 # Local environment files (the generated .env.example is safe to commit)
 .env
 .env.*
-!.env.example
+*.env*
+!*.env.example

@@ -11,9 +11,13 @@ result is safe to commit.
 
 ## Install
 
+Requires Python 3.12 or newer.
+
 ```bash
-uv tool install .          # installs the `gen_example_env` command globally
+uv tool install git+https://github.com/gokulyc/gen_example_env@main
+
 # or, inside the repo:
+uv tool install .          # installs the `gen_example_env` command globally
 uv sync && uv run gen_example_env --help
 ```
 

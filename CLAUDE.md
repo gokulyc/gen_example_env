@@ -19,7 +19,7 @@ blanked or replaced, preserving comments, blank lines and `export` prefixes. See
 
 ## Toolchain
 
-Everything goes through `uv` (Python 3.13, `uv_build` backend):
+Everything goes through `uv` (Python 3.12+, `uv_build` backend; `.python-version` pins 3.13 as the local default):
 
 ```bash
 uv sync                    # create .venv and install runtime + dev deps

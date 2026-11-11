@@ -1,0 +1,23 @@
+name: tag
+on:
+  push:
+    branches: [main]
+    paths: [pyproject.toml]
+permissions:
+  contents: write
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - name: Tag pyproject version
+        run: |
+          tag="v$(uv version --short)"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "$tag already exists"; exit 0
+          fi
+          git tag "$tag"
+          git push origin "$tag"

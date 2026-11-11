@@ -14,10 +14,20 @@ result is safe to commit.
 Requires Python 3.12 or newer.
 
 ```bash
+# a specific release
+uv tool install git+https://github.com/gokulyc/gen_example_env@v0.1.0
+
+# the latest release (newest v* tag)
+repo=https://github.com/gokulyc/gen_example_env
+tag=$(git ls-remote --tags --refs --sort=-v:refname "$repo" 'v*' | head -n1 | cut -d/ -f3)
+uv tool install --force "git+$repo@$tag"
+
+# unreleased code from main
 uv tool install git+https://github.com/gokulyc/gen_example_env@main
 
 # or, inside the repo:
 uv tool install .          # installs the `gen_example_env` command globally
+# or
 uv sync && uv run gen_example_env --help
 ```
 
@@ -61,7 +71,22 @@ API_KEY="abc123" # from the dashboard
 ```bash
 uv sync            # install runtime + dev dependencies
 uv run pytest -q   # run the test suite
+just               # list shortcuts (test, run, build, bump, ...)
 ```
+
+## Releasing
+
+The version lives only in `pyproject.toml`. Pushing a version change to `main` makes GitHub Actions
+create tag `v<version>` (existing tags are never touched).
+
+```bash
+just bump minor    # or patch / major (uv version --bump ...)
+git commit -am "Release $(just version)" && git push
+```
+
+To back out a bad version (e.g. 0.2.0): `just set-version 0.1.1`, commit and push, then `just untag 0.2.0`
+to delete the tag locally and on GitHub. Prefer moving forward over reusing a number; PyPI never accepts
+a version twice.
 
 ## License
 

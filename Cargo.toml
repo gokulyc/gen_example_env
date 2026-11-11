@@ -1,0 +1,17 @@
+[package]
+name = "gen_example_env"
+# Placeholder: the real version lives in pyproject.toml.
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.30", features = ["abi3-py312"] }
+
+[profile.release]
+lto = true
+codegen-units = 1

@@ -1,6 +1,6 @@
 [project]
 name = "gen_example_env"
-version = "0.1.1"
+version = "0.2.0"
 description = "Generate a .env.example file from an existing .env file, with secret values stripped."
 readme = "README.md"
 license = "MIT"
@@ -22,8 +22,16 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.12.5,<0.13.0"]
-build-backend = "uv_build"
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[tool.maturin]
+python-source = "src"
+module-name = "gen_example_env._core"
+features = ["pyo3/extension-module"]
+
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "Cargo.toml" }, { file = "src/**/*.rs" }]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

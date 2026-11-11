@@ -9,8 +9,10 @@ blanked or replaced, preserving comments, blank lines and `export` prefixes. See
 
 ## Layout
 
-- `src/gen_example_env/core.py` – parsing (`parse_env_lines`) and rendering (`render_example`,
-  `generate_example`) plus the `Mode` enum. No Typer or I/O here; keep it pure and testable.
+- `src/lib.rs` – the Rust (PyO3) implementation of parsing, `looks_secret` and rendering; built as
+  `gen_example_env._core`. No I/O here; keep it pure and testable.
+- `src/gen_example_env/core.py` – thin Python layer: the `Mode` enum (Typer needs it) and wrappers that
+  pass `mode.value` to `_core`; re-exports `Line`, `parse_env_lines`, `looks_secret`.
 - `src/gen_example_env/cli.py` – the Typer app (`app`) and the single `main` command. Only argument
   handling, file I/O and messaging live here.
 - `src/gen_example_env/__init__.py` – exports `__version__` only.
@@ -19,7 +21,7 @@ blanked or replaced, preserving comments, blank lines and `export` prefixes. See
 
 ## Toolchain
 
-Everything goes through `uv` (Python 3.12+, `uv_build` backend; `.python-version` pins 3.13 as the local default):
+Everything goes through `uv` (Python 3.12+, `maturin` backend, so a Rust toolchain is required; `.python-version` pins 3.13 as the local default):
 
 ```bash
 uv sync                    # create .venv and install runtime + dev deps
@@ -30,14 +32,16 @@ uv add --dev <pkg>         # add a dev dependency
 just                       # list shortcuts (test, run, build, bump, set-version, untag)
 ```
 
+After changing `src/lib.rs`, `uv run` rebuilds automatically; `uv sync --reinstall-package gen_example_env` forces it.
+
 The console script is declared in `pyproject.toml` as `gen_example_env = "gen_example_env.cli:app"`.
 The version lives only in `pyproject.toml` (`__version__` reads package metadata). Change it with `just bump`
 / `uv version`; pushing a changed `pyproject.toml` to `main` makes `.github/workflows/tag.yml` create tag `v<version>`.
 
 ## Conventions
 
-- New behaviour that changes how values are rewritten belongs in `core.py` as a new `Mode` member plus a
-  branch in `_example_value`, with a test in `tests/test_core.py` and, if it adds a flag, `tests/test_cli.py`.
+- New behaviour that changes how values are rewritten belongs in `core.py` as a new `Mode` member (Python) plus a
+  matching variant and branch in `src/lib.rs` (`Mode::parse` and `render`), with a test in `tests/test_core.py` and, if it adds a flag, `tests/test_cli.py`.
 - Keep the CLI a single command; do not add subcommands without a reason.
 - Never commit real `.env` files. `.env` is git-ignored; `.env.example` is meant to be tracked.
 - Run `uv run pytest -q` before finishing any change.

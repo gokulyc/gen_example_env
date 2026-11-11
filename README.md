@@ -11,11 +11,13 @@ result is safe to commit.
 
 ## Install
 
-Requires Python 3.12 or newer.
+Requires Python 3.12 or newer **and a Rust toolchain** ([rustup](https://rustup.rs), stable). The core is a
+Rust extension (PyO3), and every install method below compiles it locally; `uv` fetches `maturin`
+for you. There are no prebuilt wheels yet.
 
 ```bash
 # a specific release
-uv tool install git+https://github.com/gokulyc/gen_example_env@v0.1.0
+uv tool install git+https://github.com/gokulyc/gen_example_env@v0.2.0
 
 # the latest release (newest v* tag)
 repo=https://github.com/gokulyc/gen_example_env
@@ -66,13 +68,22 @@ API_KEY="abc123" # from the dashboard
 `keep-safe` blanks a value when the key name contains `SECRET`, `TOKEN`, `PASSWORD`, `PASSWD`,
 `PRIVATE`, `CREDENTIAL`, `AUTH`, `API` or `KEY`, or when the value was quoted. Everything else is kept.
 
+## How it works
+
+Parsing and rendering live in Rust (`src/lib.rs`, exposed as `gen_example_env._core` via PyO3, built with
+maturin as an `abi3` extension for Python 3.12+). Python keeps only the Typer CLI and the `Mode` enum.
+Large files are rendered roughly 10x faster than the earlier pure-Python version.
+
 ## Development
 
 ```bash
-uv sync            # install runtime + dev dependencies
+uv sync            # install runtime + dev dependencies (compiles the Rust extension)
 uv run pytest -q   # run the test suite
 just               # list shortcuts (test, run, build, bump, ...)
 ```
+
+After editing `src/lib.rs`, `uv run ...` rebuilds the extension automatically (see `cache-keys` in
+`pyproject.toml`); use `uv sync --reinstall-package gen_example_env` to force it.
 
 ## Releasing
 

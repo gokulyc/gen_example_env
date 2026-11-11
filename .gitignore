@@ -14,3 +14,7 @@ wheels/
 .env.*
 *.env*
 !*.env.example
+
+# Rust
+target/
+*.so
